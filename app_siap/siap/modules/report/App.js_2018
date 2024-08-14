@@ -1,0 +1,146 @@
+Ext.define("SIAP.modules.report.App", {
+	extend: "Ext.panel.Panel",
+	alternateClassName: "SIAP.report",
+	alias: 'widget.report',	
+	requires: [
+		'SIAP.components.tree.UnitKerja',
+		'SIAP.modules.report.PanelReportDivisi',
+		'SIAP.modules.report.PanelReportStatusPegawai',
+		'SIAP.modules.report.PanelReportSDM',
+		'SIAP.modules.report.PanelReportLocation',
+		'SIAP.modules.report.PanelReportLevel',
+		'SIAP.modules.report.PanelReportKetStatus',
+		'SIAP.modules.report.PanelReportRemindContract',
+		'SIAP.modules.report.PanelReportGender'
+	],	
+	initComponent: function(){
+		var me = this;
+		window.loadTask = new Ext.util.DelayedTask();
+		Ext.apply(me,{		
+			layout: 'border',			
+			items: [
+				{ id: 'id_west_treesatker', region: 'west', title: 'Daftar Unit Kerja', collapsible: true, collapsed: false, layout: 'fit', border: false,
+                    resizable:{dynamic:true},		
+					items:[
+						{xtype: 'unitkerja', width: 200, border: false,
+							listeners:{
+								itemclick : function(a,b,c){
+									var itemTab = me.down('tabpanel').getActiveTab().getItemId();									
+									console.log(itemTab);
+									console.log(b.get('id'));									
+									if(itemTab == 'panelreportdivisi'){			
+										me.down('#chartdivisi').surface.removeAll();									
+										window.loadTask.delay(150, function() {
+											Ext.getStore('statistikdivisi').proxy.extraParams.satkerid = b.get('id');
+											Ext.getStore('statistikdivisi').load({
+												callback : function() {				
+													me.down('#chartdivisi').redraw();												
+												}											
+											});										
+											Ext.getStore('storereportdivisi').proxy.extraParams.satkerid = b.get('id');
+											Ext.getStore('storereportdivisi').load();
+										});																		
+									}
+									else if(itemTab == 'panelreportstatuspegawai'){
+										Ext.getStore('statistikstatuspegawai').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('statistikstatuspegawai').load();																														
+										Ext.getStore('storereportstatuspeg').proxy.extraParams.statuspegawaiid = null;
+										Ext.getStore('storereportstatuspeg').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('storereportstatuspeg').load();																				
+									}
+									else if(itemTab == 'panelreportlevel'){
+										me.down('#chartlevel').surface.removeAll();
+										
+										window.loadTask.delay(150, function() {
+											Ext.getStore('statistiklevel').proxy.extraParams.satkerid = b.get('id');
+											Ext.getStore('statistiklevel').load({
+												callback : function() {				
+													me.down('#chartlevel').redraw();												
+												}											
+											});
+											Ext.getStore('storereportlevel').proxy.extraParams.satkerid = b.get('id');
+											Ext.getStore('storereportlevel').proxy.extraParams.levelid = null;
+											Ext.getStore('storereportlevel').load();																					
+										});										
+									}
+									else if(itemTab == 'panelreportketstatus'){
+										Ext.getStore('statistikketstatus').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('statistikketstatus').proxy.extraParams.bulan = Ext.ComponentQuery.query('#id_ketstatus_bulan')[0].getValue();
+										Ext.getStore('statistikketstatus').proxy.extraParams.tahun = Ext.ComponentQuery.query('#id_ketstatus_thn')[0].getValue();
+										Ext.getStore('statistikketstatus').load();								
+										
+										Ext.getStore('storereportketstatus').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('storereportketstatus').proxy.extraParams.bulan = Ext.ComponentQuery.query('#id_ketstatus_bulan')[0].getValue();
+										Ext.getStore('storereportketstatus').proxy.extraParams.tahun = Ext.ComponentQuery.query('#id_ketstatus_thn')[0].getValue();
+										Ext.getStore('storereportketstatus').proxy.extraParams.ketstatus = null;
+										Ext.getStore('storereportketstatus').load();										
+									}
+									else if(itemTab == 'panelreportsdm'){
+										Ext.getStore('storereportsdm').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('storereportsdm').load();																				
+									}
+									else if(itemTab == 'panelreportgender'){
+										Ext.getStore('statistikgenderpegawai').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('statistikgenderpegawai').load();																														
+										Ext.getStore('storereportgenderpeg').proxy.extraParams.statuspegawaiid = null;
+										Ext.getStore('storereportgenderpeg').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('storereportgenderpeg').load();																				
+									}
+									else if(itemTab == 'panelreportremindcontract'){
+										Ext.getStore('storeremindcontract').proxy.extraParams.satkerid = b.get('id');
+										Ext.getStore('storeremindcontract').load();																				
+									}
+								},
+							}												
+						}
+					]
+				},		
+				{ xtype: 'tabpanel', region: 'center', border: false, loadMask: true, activeItem: 0, layoutOnTabChange: true,
+					defaults: {autoScroll: true},
+					defaults: {
+						layout: 'border',
+						listeners: {
+							activate: function(tab, opt){
+								var itemTab = tab.itemId;
+								if(itemTab == 'panelreportdivisi'){
+									Ext.getCmp('id_west_treesatker').show();
+								}	
+								else if(itemTab == 'panelreportstatuspegawai'){
+									Ext.getCmp('id_west_treesatker').show();
+								}
+								else if(itemTab == 'panelreportsdm'){
+									Ext.getCmp('id_west_treesatker').show();
+								}
+								else if(itemTab == 'panelreportlocation'){
+									Ext.getCmp('id_west_treesatker').hide();
+								}
+								else if(itemTab == 'panelreportlevel'){
+									Ext.getCmp('id_west_treesatker').show();
+								}
+								else if(itemTab == 'panelreportgender'){
+									Ext.getCmp('id_west_treesatker').show();
+								}
+							}
+						}
+					},
+					items: [
+						{itemId: 'panelreportdivisi', xtype: 'panelreportdivisi', title: 'By Divisi'},
+						{itemId: 'panelreportstatuspegawai', xtype: 'panelreportstatuspegawai', title: 'By Status Pegawai'},
+						{itemId: 'panelreportsdm', xtype: 'panelreportsdm', title: 'SDM'},							
+						{itemId: 'panelreportlocation', xtype: 'panelreportlocation', title: 'By Location'},							
+						{itemId: 'panelreportlevel', xtype: 'panelreportlevel', title: 'By Level'},
+						{itemId: 'panelreportketstatus', xtype: 'panelreportketstatus', title: 'New Hired & Turn Over'},
+						{itemId: 'panelreportremindcontract', xtype: 'panelreportremindcontract', title: 'Remind of Contract'},
+						{itemId: 'panelreportgender', xtype: 'panelreportgender', title: 'By Gender'}
+					]
+				}				
+			],
+			listeners: {
+				afterrender: function(){
+					Ext.get('id_submenu').dom.style.display = 'none';
+				}
+			}			
+		});		
+		me.callParent([arguments]);
+	},	
+});
